@@ -7,40 +7,44 @@ people = Table(
     columns=[
         Column("id", ColumnType(DataType.INT, not_null=True, unique=True)),
         Column("name", ColumnType(DataType.TEXT)),
-        Column("salary", ColumnType(DataType.DECIMAL)),
-        Column("born",ColumnType(DataType.DATE)),],
-    primary_key=["id"],
+        Column("city", ColumnType(DataType.TEXT)),
+        Column("age", ColumnType(DataType.INT)),
+       ], primary_key=["id"],
 )
 
 # --------------------------------------------------
 # DATA
 # --------------------------------------------------
 
-people.insert(
-    ["id", "name", "salary", "born"],
-    (1, "Alice", Decimal("25000.50"), date(2000, 5, 1))
+people.insert(["id", "name", "city", "age"], (1, "Alice", "Praha", 20))
+people.insert(["id", "name", "city", "age"], (2, "Bob", None, 22))
+people.insert(["id", "name", "city", "age"], (3, "Anna", "Brno", None))
+people.insert(["id", "name", "city", "age"], (4, None, None, None))
+
+print(people.to_text())
+
+
+more_people = Table(
+    name="more_people",
+    columns=[
+        Column("id", ColumnType(DataType.INT, not_null=True, unique=True)),
+        Column("name", ColumnType(DataType.TEXT)),
+        Column("city", ColumnType(DataType.TEXT)),
+        Column("age", ColumnType(DataType.INT)),
+        Column("prefix_ok", ColumnType(DataType.INT, not_null=True)),
+    ],
+    primary_key=["id"],
 )
 
-people.insert(
-    ["id", "name", "salary", "born"],
-    (2, "Bob", Decimal("18000.00"), date(1999, 8, 15))
-)
-
-people.insert(
-    ["id", "name", "salary", "born"],
-    (3, None, None, None)
-)
-
-people2 = Table(name="people2", columns=people.columns, 
-                primary_key=people.primary_key)
-
-people2.insert(
-    ["id", "name", "salary", "born"],
-    (2, "Bob", Decimal("18000.00"), date(1999, 8, 15))
-)
-
-people2.insert(
-    ["id", "name", "salary", "born"],
-    (4, "Eve", Decimal("50000.00"), date(1995, 1, 1))
+bad_people = Table(
+    name="bad_people",
+    columns=[
+        Column("id", ColumnType(DataType.INT, not_null=True, unique=True)),
+        Column("name", ColumnType(DataType.TEXT)),
+        Column("city", ColumnType(DataType.TEXT)),
+        Column("age", ColumnType(DataType.INT)),
+        Column("prefix_ok", ColumnType(DataType.INT, not_null=True)),
+    ],
+    primary_key=["id"],
 )
 
