@@ -1,3 +1,5 @@
+from nanodb import Column, ColumnType, DataType, Table
+
 # --------------------------------------------------
 # DEFINICE TABULKY
 # --------------------------------------------------
@@ -47,4 +49,3 @@ bad_people = Table(
     ],
     primary_key=["id"],
 )
-

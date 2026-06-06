@@ -3,7 +3,6 @@ from decimal import Decimal
 from enum import Enum
 from collections.abc import Collection, Sequence
 from typing import TypeAlias, Iterator, Callable, Mapping
-from zoneinfo import reset_tzpath
 
 Value: TypeAlias = None | int | Decimal | str | date
 Row: TypeAlias = tuple[Value, ...]
@@ -102,6 +101,7 @@ class Table(Sequence):
         name: str,
         columns: Sequence[Column],
         primary_key: Sequence[str]):
+        columns = tuple(self._copy_column(column) for column in columns)
         if not columns:
             raise ValueError("Table must have at least one column.")
 
@@ -150,7 +150,20 @@ class Table(Sequence):
     @property
     def columns(self) -> Sequence[Column]:
         """Return ordered columns."""
-        return tuple(self._columns)
+        return tuple(self._copy_column(column) for column in self._columns)
+
+    @staticmethod
+    def _copy_column(column: Column) -> Column:
+        """Return an independent copy of a column definition."""
+        column_type = column.column_type
+        return Column(
+            column.name,
+            ColumnType(
+                column_type.data_type,
+                not_null=column_type.not_null,
+                unique=column_type.unique,
+            ),
+        )
 
     @property
     def primary_key(self) -> Sequence[str]:
@@ -218,7 +231,12 @@ class Table(Sequence):
         if expected_type is None:
             raise TypeError(f"Unsupported data type in column {column.name!r}.")
 
-        if not isinstance(value, expected_type):
+        if col_type.data_type in (DataType.INT, DataType.DATE):
+            type_matches = type(value) is expected_type
+        else:
+            type_matches = isinstance(value, expected_type)
+
+        if not type_matches:
             raise TypeError(f"Column {column.name!r} expects {expected_type.__name__}.")
 
     def _check_unique_constraints(self, new_row: Row) -> None:
@@ -423,7 +441,11 @@ class Table(Sequence):
         Returns:
             The target table extended by projected rows.
         """
-        ...
+        for row in self._rows:
+            projected = transform(self._row_to_mapping(row))
+            target.insert(tuple(projected.keys()), tuple(projected.values()))
+
+        return target
 
     def get_column(self, column_name: str) -> Sequence[Value]:
         result = []
